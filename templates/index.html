@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tuberculosis Prediction Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Tableau de Bord de Prédiction de la Tuberculose</h1>
+        <p>Entrez les caractéristiques cliniques pour prédire le risque de tuberculose.</p>
+        
+        <h2>Formulaire de Prédiction</h2>
+        <form id="predictionForm">
+            <label>Âge (18-80) :</label>
+            <input type="number" id="age" name="age" min="18" max="80" required><br>
+            <label>Durée de la toux (jours, 0-30) :</label>
+            <input type="number" id="cough_duration" name="cough_duration" min="0" max="30" required><br>
+            <label>Fièvre (0 = Non, 1 = Oui) :</label>
+            <input type="number" id="fever" name="fever" min="0" max="1" required><br>
+            <label>Perte de poids (0 = Non, 1 = Oui) :</label>
+            <input type="number" id="weight_loss" name="weight_loss" min="0" max="1" required><br>
+            <label>Sueurs nocturnes (0 = Non, 1 = Oui) :</label>
+            <input type="number" id="night_sweats" name="night_sweats" min="0" max="1" required><br>
+            <button type="button" onclick="predictTB()">Prédire</button>
+        </form>
+        <div id="result"></div>
+        
+        <h2>Visualisations du Modèle</h2>
+        <div class="plot">{{ plot1 | safe }}</div>
+        <div class="plot">{{ plot2 | safe }}</div>
+        
+        <h2>Métriques d'Évaluation</h2>
+        <p>Précision : {{ precision|round(2) }}</p>
+        <p>Rappel : {{ recall|round(2) }}</p>
+        <p>F1-Score : {{ f1_score|round(2) }}</p>
+    </div>
+    <script>
+        async function predictTB() {
+            const form = document.getElementById('predictionForm');
+            const result = document.getElementById('result');
+            const formData = new FormData(form);
+            
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                if (data.error) {
+                    result.innerHTML = `Erreur : ${data.error}`;
+                } else {
+                    result.innerHTML = `Prédiction : ${data.prediction} (Confiance : ${data.confidence})`;
+                }
+            } catch (error) {
+                result.innerHTML = `Erreur : ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
